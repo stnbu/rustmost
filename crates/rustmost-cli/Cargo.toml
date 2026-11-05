@@ -1,0 +1,21 @@
+[package]
+name = "rustmost"
+version = "0.1.0"
+edition = "2024"
+description = "A Mattermost client for the terminal"
+
+[dependencies]
+anyhow = "1.0.104"
+chrono = { version = "0.4.45", default-features = false, features = ["clock", "std"] }
+clap = { version = "4.6.7", features = ["derive", "env"] }
+dirs = "7.0.0"
+futures-util = "0.3.34"
+rpassword = "7.5.4"
+rustmost-api = { version = "0.1.0", path = "../rustmost-api" }
+serde = { version = "1.0.229", features = ["derive"] }
+tokio = { version = "1.54.1", features = ["rt-multi-thread", "macros", "signal"] }
+toml = "1.2.0"
+
+[dev-dependencies]
+fake-mattermost = { path = "../fake-mattermost" }
+tokio = { version = "1.54.1", features = ["full"] }

@@ -1,0 +1,21 @@
+[package]
+name = "rustmost-api"
+version = "0.1.0"
+edition = "2024"
+description = "Async Rust client for the Mattermost v4 REST and WebSocket APIs"
+
+[dependencies]
+futures-util = "0.3.34"
+reqwest = { version = "0.13.5", default-features = false, features = ["http2", "json", "multipart", "query", "rustls", "system-proxy"] }
+rustls = { version = "0.23.46", default-features = false, features = ["aws_lc_rs", "std", "tls12"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+thiserror = "2.0.21"
+tokio = { version = "1.54.1", features = ["rt", "macros", "time", "sync", "net"] }
+tokio-tungstenite = { version = "0.30.0", features = ["rustls-tls-native-roots"] }
+tracing = "0.1.44"
+url = "2.5.8"
+
+[dev-dependencies]
+fake-mattermost = { path = "../fake-mattermost" }
+tokio = { version = "1.54.1", features = ["full"] }
