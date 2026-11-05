@@ -1,6 +1,7 @@
 mod config;
 mod format;
 mod session;
+mod tui;
 
 use std::collections::{HashMap, HashSet};
 use std::io::{IsTerminal, Read, Write};
@@ -34,8 +35,9 @@ struct Cli {
     #[arg(long, short = 't', global = true)]
     team: Option<String>,
 
+    /// With no command, opens the full-screen interface.
     #[command(subcommand)]
-    command: Command,
+    command: Option<Command>,
 }
 
 #[derive(Subcommand)]
@@ -104,6 +106,8 @@ enum Command {
     },
     /// Add a reaction to a post (`+1`, `tada`, ...).
     React { post_id: String, emoji: String },
+    /// Open the full-screen interface (the default with no command).
+    Tui,
 }
 
 #[tokio::main]
@@ -123,11 +127,12 @@ async fn main() {
 }
 
 async fn run() -> Result<()> {
-    let cli = Cli::parse();
+    let mut cli = Cli::parse();
     let path = cli.config.clone().unwrap_or_else(config::default_path);
     let mut cfg = Config::load(&path)?;
+    let command = cli.command.take().unwrap_or(Command::Tui);
 
-    match &cli.command {
+    match &command {
         Command::Login { username } => return login(&cli, &mut cfg, &path, username.clone()).await,
         Command::Use { team } => {
             let mut s = session(&cli, &cfg).await?;
@@ -154,8 +159,10 @@ async fn run() -> Result<()> {
     let mut s = session(&cli, &cfg).await?;
     let team_flag = cli.team.as_deref();
 
-    match cli.command {
+    match command {
         Command::Login { .. } | Command::Logout | Command::Use { .. } => unreachable!(),
+
+        Command::Tui => tui::run(s, team_flag).await?,
 
         Command::Whoami => {
             let me = s.client.me().await?;
