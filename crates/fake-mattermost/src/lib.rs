@@ -752,7 +752,19 @@ async fn channel_posts(
     let per_page: usize = q.get("per_page").and_then(|v| v.parse().ok()).unwrap_or(60);
     let mut posts: Vec<&Post> = d.posts.iter().filter(|p| p.channel_id == cid).collect();
     posts.sort_by_key(|p| std::cmp::Reverse(p.create_at));
-    posts.truncate(per_page);
+    // `before=<post id>`: only posts older than that one.
+    if let Some(before) = q.get("before").filter(|b| !b.is_empty()) {
+        match posts.iter().position(|p| &p.id == before) {
+            Some(i) => posts.drain(..=i).for_each(drop),
+            None => posts.clear(),
+        }
+    }
+    let page: usize = q.get("page").and_then(|v| v.parse().ok()).unwrap_or(0);
+    let posts: Vec<&Post> = posts
+        .into_iter()
+        .skip(page * per_page)
+        .take(per_page)
+        .collect();
     Json(post_list(&d, &posts)).into_response()
 }
 
